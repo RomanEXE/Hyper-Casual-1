@@ -7,16 +7,19 @@ public class Player : MonoBehaviour
 {
     [Header("Main")]
     [SerializeField] private Transform leftPoint, rightPoint;
-    [SerializeField] private int _speed;
-    [SerializeField] private LosePanel _losePanel;
     [SerializeField] private Player _playerPrefab;
 
     [Header("Stats")]
+    [SerializeField] private int _speed;
     [SerializeField] int _money;
     [SerializeField] int _score;
 
     [Header("UI")]
     [SerializeField] private Text _scoreUI;
+    [SerializeField] private LosePanel _losePanel;
+
+    [Header("Particles")]
+    [SerializeField] private ParticleSystem _deathParticle;
 
     private void Start()
     {
@@ -54,7 +57,7 @@ public class Player : MonoBehaviour
         _scoreUI.text = $"Score: {_score}";
     }
 
-    private void Die()
+    public void Die()
     {
         foreach (var spawner in FindObjectsOfType<Spawner>())
         {
@@ -62,20 +65,14 @@ public class Player : MonoBehaviour
         }
 
         _speed = 0;
+        var particle = Instantiate(_deathParticle);
+        particle.transform.position = transform.position;
 
-        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-        GetComponent<BoxCollider2D>().isTrigger = false;
         PlayerPrefs.SetInt("Money", _money += _score);
         PlayerPrefs.Save();
 
+        FindObjectOfType<AudioManager>().Play("Sound of the death");
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
         _losePanel.OpenPanel(_score, PlayerPrefs.GetInt("Money", _money));
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.GetComponent<Enemy>())
-        {
-            Die();
-        }
     }
 }

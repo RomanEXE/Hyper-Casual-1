@@ -25,5 +25,9 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
             _player.UpdateScore();
         }
+        else if (collision.GetComponent<Player>())
+        {
+            collision.GetComponent<Player>().Die();
+        }
     }
 }
